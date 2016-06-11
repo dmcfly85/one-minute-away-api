@@ -11,11 +11,11 @@ git clone git@github.com:one-minute-away/one-minute-away-api.git
 ```
 Set the your env variables locally and remotely
 
-`TWILIO_ACCOUNT_SID=[your sid]`
+`NEXMO_KEY=[your key]`
 
-`TWILIO_AUTH_TOKEN=[your token]`
+`NEXMO_SECRET=[your secret]`
 
-`TWILIO_NUMBER=[your number]`
+`NEXMO_NUMBER=[your number]`
 
 `OBA_KEY=[your one bus away key]`
 
