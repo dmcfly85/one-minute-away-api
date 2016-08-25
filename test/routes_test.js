@@ -41,32 +41,30 @@ describe('User routes', () => {
     });
   });
 
-  it('allow a user get their user info', (done) => {
+  it('should allow a user to access their saved routes', (done) => {
     request('localhost:3000')
-      .get('/user/' + testUser._id)
+      .get('/user/' + testUser._id + '/routes')
       .set('token', token)
       .end((err, res) => {
         expect(err).to.eql(null);
-        expect(res.body.username).to.eql('testuser');
-        expect(res.body.password).to.eql(null);
+        expect(res.body).to.eql(testUser.routes);
         done();
       });
   });
 
-  it('allow a user to DELETE themself', (done) => {
+  it('should allow a user to save a new route' , (done) => {
     request('localhost:3000')
-      .delete('/user/' + testUser._id)
-      .set('token', token)
-      .end((err, res) => {
-        expect(err).to.eql(null);
-        expect(res.body.message).to.eql('successfully deleted');
-        User.findOne({
-          _id: testUser._id
-        }, (err) => {
-          if (err) return err;
-          expect(err).to.eql(null);
-          done();
-        });
-      });
+    .post('/user/' + testUser._id + '/routes')
+    .set('token', token)
+    .send({
+      nickname: 'testNickName',
+      stop_id: 'testStop',
+      route_id: 'testId'
+    })
+    .end((err, res) => {
+      expect(err).to.eql(null);
+      expect(res.body.routes[0].nickname).to.eql('testNickName');
+      done();
+    });
   });
 });

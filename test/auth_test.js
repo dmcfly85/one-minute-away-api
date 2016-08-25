@@ -15,9 +15,8 @@ process.env.MONGOLAB_URI = 'mongodb://localhost/test_db';
 
 require('../server');
 
-describe('User routes', () => {
+describe('User authorization should', () => {
   let testUser;
-  let token;
   beforeEach((done) => {
     let newUser = new User({
       username: 'testuser',
@@ -28,9 +27,6 @@ describe('User routes', () => {
     });
     newUser.save((err, user) => {
       testUser = user;
-      token = jwt.sign({
-        _id: testUser._id
-      }, secret);
       done();
     });
   });
@@ -41,32 +37,44 @@ describe('User routes', () => {
     });
   });
 
-  it('allow a user get their user info', (done) => {
+  it('allow a known user to login and send a correct token', (done) => {
+
     request('localhost:3000')
-      .get('/user/' + testUser._id)
-      .set('token', token)
+      .get('/signin')
+      .auth('testuser', 'testuser')
       .end((err, res) => {
         expect(err).to.eql(null);
-        expect(res.body.username).to.eql('testuser');
-        expect(res.body.password).to.eql(null);
+        expect(res.body.token).to.eql(jwt.sign({
+          _id: testUser._id
+        }, secret));
         done();
       });
   });
 
-  it('allow a user to DELETE themself', (done) => {
+  it('allow a new user to be created and send a token back', (done) => {
     request('localhost:3000')
-      .delete('/user/' + testUser._id)
-      .set('token', token)
+      .post('/signup')
+      .set('Content-Type', 'application/json')
+      .send({
+        username: 'user',
+        password: 'password',
+        phoneNumber: '555555555',
+        email: 'test@test.com'
+      })
       .end((err, res) => {
-        expect(err).to.eql(null);
-        expect(res.body.message).to.eql('successfully deleted');
-        User.findOne({
-          _id: testUser._id
-        }, (err) => {
+        User.find({
+          username: 'user'
+        }, (err, user) => {
           if (err) return err;
           expect(err).to.eql(null);
+          expect(res).to.have.status(200);
+          expect(res.body.token).to.eql(jwt.sign({
+            _id: user[0]._id
+          }, secret));
           done();
         });
       });
   });
+
+
 });
